@@ -14,10 +14,12 @@ import {
   startWhatsApp,
   stopWhatsApp
 } from './wa.js'
+import { getWebhookStatus, loadWebhookQueue } from './webhook.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 fs.mkdirSync(config.dataDir, { recursive: true })
 loadMessages()
+loadWebhookQueue()
 
 const app = express()
 app.disable('x-powered-by')
@@ -60,7 +62,7 @@ const wrap = fn => (req, res) =>
 app.get('/health', (req, res) => res.json({ ok: true, whatsapp: getStatus().status }))
 
 // API
-app.get('/api/status', requireAdminOrKey, (req, res) => res.json(getStatus()))
+app.get('/api/status', requireAdminOrKey, (req, res) => res.json({ ...getStatus(), webhook: getWebhookStatus() }))
 
 app.get('/api/messages', requireAdminOrKey, (req, res) => {
   const limit = Math.min(Number(req.query.limit) || 100, 300)
