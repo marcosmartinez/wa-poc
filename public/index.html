@@ -123,7 +123,7 @@
     <h2>Integración por API</h2>
     <p class="muted" style="margin-top:0">Para enviar desde otro sistema, definí la variable <code>API_KEY</code> en Railway y usala en el header <code>x-api-key</code>.</p>
 <pre id="api-example"></pre>
-    <p class="muted">Para recibir mensajes en tu sistema, definí <code>WEBHOOK_URL</code>: el bot le hace un POST con cada mensaje entrante.</p>
+    <p class="muted">Este servicio no contesta por su cuenta. Para recibir los mensajes en tu sistema, definí <code>WEBHOOK_URL</code> y <code>WEBHOOK_SECRET</code>: se hace un POST firmado por cada mensaje entrante, con reintentos si falla.</p>
   </section>
 </main>
 

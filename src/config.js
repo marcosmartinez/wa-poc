@@ -16,12 +16,12 @@ export const config = {
   dataDir: DATA_DIR,
   authDir: path.join(DATA_DIR, 'auth'),
   messagesFile: path.join(DATA_DIR, 'messages.json'),
+  webhookQueueFile: path.join(DATA_DIR, 'webhook-queue.json'),
   adminUser: process.env.ADMIN_USER || 'admin',
   adminPassword,
   apiKey: process.env.API_KEY || '',
   webhookUrl: process.env.WEBHOOK_URL || '',
   webhookSecret: process.env.WEBHOOK_SECRET || '',
-  autoReplyText: process.env.AUTO_REPLY_TEXT || '',
   botName: process.env.BOT_NAME || 'Bot',
   logLevel: process.env.LOG_LEVEL || 'warn'
 }

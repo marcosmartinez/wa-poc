@@ -11,6 +11,7 @@ import makeWASocket, {
 } from 'baileys'
 import { config } from './config.js'
 import { addMessage } from './store.js'
+import { enqueueWebhook } from './webhook.js'
 
 const logger = pino({ level: config.logLevel })
 
@@ -160,47 +161,8 @@ async function handleIncoming(m) {
     timestamp: new Date(Number(m.messageTimestamp) * 1000 || Date.now()).toISOString()
   }
   addMessage(record)
-  forwardToWebhook(record)
-
-  const reply = buildReply(text.trim(), isGroup, m.pushName)
-  if (reply) await sendText(chat, reply, { quoted: m })
-}
-
-function buildReply(text, isGroup, name) {
-  const t = text.toLowerCase()
-  if (t === 'ping') return 'pong'
-  if (t === '/ayuda' || t === '/help') {
-    return [
-      `Hola${name ? ' ' + name : ''}, soy ${config.botName}.`,
-      'Comandos:',
-      '• ping → pong',
-      '• /hora → fecha y hora',
-      '• /ayuda → este mensaje'
-    ].join('\n')
-  }
-  if (t === '/hora') {
-    return new Date().toLocaleString('es-AR', { timeZone: 'America/Argentina/Cordoba' })
-  }
-  // En grupos solo responde a comandos; en chats directos puede tener respuesta automática.
-  if (!isGroup && config.autoReplyText) return config.autoReplyText
-  return null
-}
-
-async function forwardToWebhook(record) {
-  if (!config.webhookUrl) return
-  try {
-    await fetch(config.webhookUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(config.webhookSecret ? { 'x-webhook-secret': config.webhookSecret } : {})
-      },
-      body: JSON.stringify({ event: 'message', ...record }),
-      signal: AbortSignal.timeout(10000)
-    })
-  } catch (err) {
-    console.error('[webhook] falló el envío:', err.message)
-  }
+  // Este servicio no decide qué contestar: solo entrega el mensaje al sistema externo.
+  enqueueWebhook(record)
 }
 
 export function toJid(to) {

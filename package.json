@@ -1,7 +1,7 @@
 {
   "name": "wa-bot-poc",
   "version": "1.0.0",
-  "description": "POC de bot de WhatsApp con Baileys, panel web y API, listo para Railway",
+  "description": "POC de gateway de WhatsApp con Baileys: webhook de entrantes, API de envío y panel web, listo para Railway",
   "type": "module",
   "main": "src/index.js",
   "scripts": {
