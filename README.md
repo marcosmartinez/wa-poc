@@ -153,3 +153,7 @@ Dockerfile      imagen que usa Railway
 - Para un uso comercial con clientes a escala, lo correcto es la **WhatsApp Cloud API** oficial de Meta.
 - La cola de webhooks y el historial guardan texto de mensajes de terceros en `/data`.
 - La carpeta `/data/auth` es la sesión del número: quien la tenga puede usar esa cuenta. No la compartas.
+
+## Licencia
+
+[MIT](LICENSE) © 2026 Fligoo.
