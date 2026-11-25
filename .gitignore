@@ -1,3 +1,19 @@
-node_modules
-data
+# Dependencias
+node_modules/
+
+# Sesión de WhatsApp e historial: quien tenga esta carpeta puede usar la cuenta
+data/
+
+# Variables de entorno (solo se versiona el ejemplo)
 .env
+.env.*
+!.env.example
+
+# Logs
+*.log
+npm-debug.log*
+
+# Sistema y editores
+.DS_Store
+.idea/
+.vscode/

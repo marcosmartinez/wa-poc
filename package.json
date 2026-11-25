@@ -6,7 +6,8 @@
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
-    "dev": "node --watch src/index.js"
+    "dev": "node --watch src/index.js",
+    "check": "for f in src/*.js; do node --check \"$f\" || exit 1; done"
   },
   "engines": {
     "node": ">=20"
@@ -16,5 +17,10 @@
     "express": "^4.21.2",
     "pino": "^9.6.0",
     "qrcode": "^1.5.4"
+  },
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/marcosmartinez/wa-poc.git"
   }
 }
