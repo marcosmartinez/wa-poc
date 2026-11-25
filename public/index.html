@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WhatsApp Bot · Panel</title>
+<style>
+  :root { --bg:#f6f7f9; --card:#fff; --text:#17191c; --muted:#68707a; --border:#e3e6ea; --accent:#128c7e; --accent-2:#e7f5f2; --danger:#c0392b; --warn:#b7791f; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background:var(--bg); color:var(--text); }
+  header { display:flex; align-items:center; justify-content:space-between; padding:16px 24px; background:var(--card); border-bottom:1px solid var(--border); }
+  header h1 { font-size:18px; margin:0; font-weight:600; }
+  main { max-width:1100px; margin:0 auto; padding:24px; display:grid; grid-template-columns: 1fr 1fr; gap:20px; }
+  @media (max-width: 860px) { main { grid-template-columns: 1fr; } }
+  .card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:20px; }
+  .card h2 { font-size:15px; margin:0 0 14px; font-weight:600; }
+  .full { grid-column: 1 / -1; }
+  .pill { display:inline-flex; align-items:center; gap:8px; padding:6px 12px; border-radius:999px; font-size:13px; background:#eef0f3; color:var(--muted); }
+  .pill .dot { width:8px; height:8px; border-radius:50%; background:currentColor; }
+  .pill.connected { background:var(--accent-2); color:var(--accent); }
+  .pill.qr, .pill.reconnecting, .pill.starting { background:#fdf3e1; color:var(--warn); }
+  label { display:block; font-size:13px; color:var(--muted); margin:10px 0 6px; }
+  input, textarea { width:100%; padding:10px 12px; border:1px solid var(--border); border-radius:8px; font:inherit; font-size:14px; }
+  textarea { min-height:90px; resize:vertical; }
+  button { font:inherit; font-size:14px; padding:9px 16px; border-radius:8px; border:1px solid var(--accent); background:var(--accent); color:#fff; cursor:pointer; }
+  button.secondary { background:#fff; color:var(--accent); }
+  button.danger { background:#fff; color:var(--danger); border-color:var(--danger); }
+  button:disabled { opacity:.5; cursor:default; }
+  .row { display:flex; gap:10px; align-items:center; margin-top:12px; flex-wrap:wrap; }
+  .muted { color:var(--muted); font-size:13px; }
+  .msg-ok { color:var(--accent); font-size:13px; }
+  .msg-err { color:var(--danger); font-size:13px; }
+  #qr-box { display:flex; flex-direction:column; align-items:center; gap:12px; }
+  #qr-img { width:280px; height:280px; border:1px solid var(--border); border-radius:8px; }
+  .code { font-family: ui-monospace, Menlo, monospace; font-size:28px; letter-spacing:4px; padding:10px 16px; background:var(--accent-2); color:var(--accent); border-radius:8px; }
+  ol { margin:0; padding-left:20px; font-size:14px; line-height:1.7; }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  th, td { text-align:left; padding:8px 6px; border-bottom:1px solid var(--border); vertical-align:top; }
+  th { color:var(--muted); font-weight:500; }
+  td.text { white-space:pre-wrap; word-break:break-word; }
+  .dir { font-size:11px; padding:2px 8px; border-radius:999px; }
+  .dir.in { background:#eef0f3; color:var(--muted); }
+  .dir.out { background:var(--accent-2); color:var(--accent); }
+  pre { background:#0f1720; color:#e6edf3; padding:14px; border-radius:8px; font-size:12px; overflow:auto; }
+  .link { background:none; border:none; color:var(--accent); padding:0; cursor:pointer; font-size:13px; }
+  .link-grid { display:grid; grid-template-columns: 300px 1fr; gap:28px; align-items:start; }
+  @media (max-width: 700px) { .link-grid { grid-template-columns: 1fr; } }
+  [hidden] { display:none !important; }
+</style>
+</head>
+<body>
+<header>
+  <h1>WhatsApp Bot</h1>
+  <span id="status" class="pill"><span class="dot"></span><span id="status-text">Cargando…</span></span>
+</header>
+
+<main>
+  <!-- Vincular -->
+  <section class="card full" id="link-card" hidden>
+    <h2>Vincular un número de WhatsApp</h2>
+    <div class="link-grid">
+      <div id="qr-box">
+        <img id="qr-img" alt="Código QR para vincular WhatsApp">
+        <span class="muted" id="qr-hint">El QR se renueva solo cada ~20 segundos.</span>
+      </div>
+      <div>
+        <ol>
+          <li>Abrí WhatsApp en el teléfono del número que va a usar el bot.</li>
+          <li>Andá a <b>Configuración → Dispositivos vinculados → Vincular dispositivo</b>.</li>
+          <li>Escaneá el QR de la izquierda.</li>
+        </ol>
+        <p class="muted" style="margin-top:18px">¿No podés escanear (por ejemplo, estás viendo esto en el mismo teléfono)? Vinculá con código:</p>
+        <label for="pair-phone">Número en formato internacional, sin + ni espacios</label>
+        <input id="pair-phone" placeholder="5493511234567">
+        <div class="row">
+          <button id="pair-btn" class="secondary">Obtener código</button>
+          <span id="pair-msg"></span>
+        </div>
+        <div id="pair-result" class="row" hidden>
+          <span class="code" id="pair-code"></span>
+          <span class="muted">En el teléfono: Vincular dispositivo → <b>Vincular con número de teléfono</b> e ingresá este código.</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Conectado -->
+  <section class="card" id="send-card" hidden>
+    <h2>Enviar mensaje</h2>
+    <label for="to">Para (número internacional o ID de grupo)</label>
+    <input id="to" placeholder="5493511234567  o  1203630…@g.us">
+    <label for="text">Mensaje</label>
+    <textarea id="text" placeholder="Hola!"></textarea>
+    <div class="row">
+      <button id="send-btn">Enviar</button>
+      <span id="send-msg"></span>
+    </div>
+  </section>
+
+  <section class="card" id="account-card" hidden>
+    <h2>Cuenta vinculada</h2>
+    <p style="margin:0 0 6px"><b id="me-name"></b></p>
+    <p class="muted" style="margin:0" id="me-id"></p>
+    <p class="muted" id="me-since"></p>
+    <div class="row">
+      <button id="groups-btn" class="secondary">Ver grupos</button>
+      <button id="logout-btn" class="danger">Desvincular número</button>
+    </div>
+    <div id="groups" style="margin-top:14px"></div>
+  </section>
+
+  <!-- Mensajes -->
+  <section class="card full">
+    <h2>Últimos mensajes</h2>
+    <table>
+      <thead><tr><th style="width:70px"></th><th style="width:150px">Fecha</th><th style="width:220px">Contacto</th><th>Mensaje</th></tr></thead>
+      <tbody id="messages"><tr><td colspan="4" class="muted">Sin mensajes todavía.</td></tr></tbody>
+    </table>
+  </section>
+
+  <!-- API -->
+  <section class="card full">
+    <h2>Integración por API</h2>
+    <p class="muted" style="margin-top:0">Para enviar desde otro sistema, definí la variable <code>API_KEY</code> en Railway y usala en el header <code>x-api-key</code>.</p>
+<pre id="api-example"></pre>
+    <p class="muted">Para recibir mensajes en tu sistema, definí <code>WEBHOOK_URL</code>: el bot le hace un POST con cada mensaje entrante.</p>
+  </section>
+</main>
+
+<script>
+const $ = id => document.getElementById(id)
+const labels = { starting:'Iniciando…', qr:'Esperando vinculación', connected:'Conectado', reconnecting:'Reconectando…', stopped:'Detenido' }
+let lastStatus = null
+
+async function api(path, opts = {}) {
+  const res = await fetch(path, { headers: { 'Content-Type': 'application/json' }, ...opts })
+  const data = await res.json().catch(() => ({}))
+  if (!res.ok) throw new Error(data.error || `Error ${res.status}`)
+  return data
+}
+
+function setMsg(el, text, ok) {
+  el.textContent = text
+  el.className = ok ? 'msg-ok' : 'msg-err'
+}
+
+function escapeHtml(s) {
+  return String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]))
+}
+
+function shortJid(jid) { return String(jid || '').split('@')[0].split(':')[0] }
+
+async function refreshStatus() {
+  try {
+    const s = await api('/api/status')
+    $('status').className = 'pill ' + s.status
+    $('status-text').textContent = labels[s.status] || s.status
+    const connected = s.status === 'connected'
+    $('link-card').hidden = connected
+    $('send-card').hidden = !connected
+    $('account-card').hidden = !connected
+    if (s.qr) { $('qr-img').src = s.qr; $('qr-img').style.visibility = 'visible'; $('qr-hint').textContent = 'El QR se renueva solo cada ~20 segundos.' }
+    else if (!connected) { $('qr-img').style.visibility = 'hidden'; $('qr-hint').textContent = 'Generando QR…' }
+    if (connected) {
+      $('me-name').textContent = s.me?.name || 'Sin nombre'
+      $('me-id').textContent = '+' + shortJid(s.me?.id)
+      $('me-since').textContent = s.connectedAt ? 'Conectado desde ' + new Date(s.connectedAt).toLocaleString('es-AR') : ''
+      if (lastStatus !== 'connected') $('pair-result').hidden = true
+    }
+    lastStatus = s.status
+  } catch (e) {
+    $('status-text').textContent = 'Sin conexión con el servidor'
+  }
+}
+
+async function refreshMessages() {
+  try {
+    const list = await api('/api/messages?limit=50')
+    if (!list.length) return
+    $('messages').innerHTML = list.map(m => `
+      <tr>
+        <td><span class="dir ${m.direction}">${m.direction === 'in' ? 'Recibido' : 'Enviado'}</span></td>
+        <td class="muted">${new Date(m.timestamp).toLocaleString('es-AR')}</td>
+        <td>${escapeHtml(m.direction === 'in' ? (m.name || '') : 'Para')}<br>
+            <button class="link" data-to="${escapeHtml(m.chat)}">${escapeHtml(m.chatType === 'group' ? 'Grupo ' + shortJid(m.chat) : shortJid(m.direction === 'in' ? m.from : m.chat))}</button></td>
+        <td class="text">${escapeHtml(m.text)}</td>
+      </tr>`).join('')
+  } catch {}
+}
+
+$('messages').addEventListener('click', e => {
+  const to = e.target.dataset?.to
+  if (!to) return
+  $('to').value = to.endsWith('@s.whatsapp.net') ? shortJid(to) : to
+  $('text').focus()
+})
+
+$('send-btn').onclick = async () => {
+  const btn = $('send-btn'); btn.disabled = true
+  try {
+    if (!$('to').value.trim()) throw new Error('Completá el destinatario')
+    if (!$('text').value.trim()) throw new Error('Escribí un mensaje')
+    await api('/api/send', { method:'POST', body: JSON.stringify({ to: $('to').value, text: $('text').value }) })
+    setMsg($('send-msg'), 'Enviado', true)
+    $('text').value = ''
+    refreshMessages()
+  } catch (e) { setMsg($('send-msg'), e.message, false) }
+  btn.disabled = false
+}
+
+$('pair-btn').onclick = async () => {
+  const btn = $('pair-btn'); btn.disabled = true
+  try {
+    if (!$('pair-phone').value.trim()) throw new Error('Ingresá el número')
+    const { code } = await api('/api/pairing-code', { method:'POST', body: JSON.stringify({ phone: $('pair-phone').value }) })
+    $('pair-code').textContent = code
+    $('pair-result').hidden = false
+    $('pair-msg').textContent = ''
+  } catch (e) { setMsg($('pair-msg'), e.message, false) }
+  btn.disabled = false
+}
+
+$('groups-btn').onclick = async () => {
+  $('groups').innerHTML = '<span class="muted">Cargando…</span>'
+  try {
+    const groups = await api('/api/groups')
+    $('groups').innerHTML = groups.length
+      ? '<table><tr><th>Grupo</th><th>ID</th></tr>' + groups.map(g => `<tr><td>${escapeHtml(g.name)}</td><td><button class="link" data-group="${escapeHtml(g.id)}">${escapeHtml(g.id)}</button></td></tr>`).join('') + '</table>'
+      : '<span class="muted">El número no está en ningún grupo.</span>'
+  } catch (e) { $('groups').innerHTML = `<span class="msg-err">${escapeHtml(e.message)}</span>` }
+}
+$('groups').addEventListener('click', e => {
+  if (e.target.dataset?.group) { $('to').value = e.target.dataset.group; $('text').focus() }
+})
+
+$('logout-btn').onclick = async () => {
+  if (!confirm('¿Desvincular este número? Vas a tener que volver a escanear un QR.')) return
+  try { await api('/api/logout', { method:'POST' }); refreshStatus() } catch (e) { alert(e.message) }
+}
+
+$('api-example').textContent = `curl -X POST ${location.origin}/api/send \\
+  -H "x-api-key: TU_API_KEY" \\
+  -H "Content-Type: application/json" \\
+  -d '{"to":"5493511234567","text":"Hola desde la API"}'`
+
+refreshStatus(); refreshMessages()
+setInterval(refreshStatus, 3000)
+setInterval(refreshMessages, 4000)
+</script>
+</body>
+</html>

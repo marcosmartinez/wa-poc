@@ -1,0 +1,20 @@
+{
+  "name": "wa-bot-poc",
+  "version": "1.0.0",
+  "description": "POC de bot de WhatsApp con Baileys, panel web y API, listo para Railway",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "baileys": "7.0.0-rc14",
+    "express": "^4.21.2",
+    "pino": "^9.6.0",
+    "qrcode": "^1.5.4"
+  }
+}
