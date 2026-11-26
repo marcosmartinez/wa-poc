@@ -17,6 +17,19 @@ Incluye un panel web donde cualquier persona con la contraseña puede vincular u
 - **Sesión persistente** en un volume: los redeploys no piden escanear de nuevo.
 - **Reconexión automática** con backoff. Si se desvincula desde el teléfono, genera un QR nuevo solo.
 
+## Instalación guiada
+
+```bash
+npm run setup
+```
+
+El asistente revisa los requisitos (Node, dependencias), pregunta la configuración, genera las claves (`ADMIN_PASSWORD`, `API_KEY`, `WEBHOOK_SECRET`) y la deja aplicada:
+
+- **En local**: escribe el `.env` y ofrece iniciar el servicio.
+- **En Railway**: si tenés el [CLI de Railway](https://docs.railway.com/guides/cli) y la carpeta vinculada (`railway link`), carga las variables en el servicio después de pedirte confirmación. Si no, te deja el bloque listo para pegar en el *Raw Editor*.
+
+Al final muestra lo que falta hacer a mano (volume, dominio, escanear el QR). Se puede volver a correr cuando quieras: en local mantiene los valores que ya tenías. Los pasos de abajo son lo mismo, hecho a mano.
+
 ## Deploy en Railway (10 minutos)
 
 1. **Subí el código a GitHub**
@@ -124,9 +137,15 @@ export async function POST(req) {
 ## Correr en local
 
 ```bash
+npm run setup          # crea el .env y ofrece iniciar el servicio
+```
+
+O a mano:
+
+```bash
 cp .env.example .env   # y completá ADMIN_PASSWORD
 npm install
-node --env-file=.env src/index.js
+npm run start:local
 # abrí http://localhost:3000
 ```
 La sesión y el historial se guardan en `./data`. No subas esa carpeta a ningún lado.
@@ -143,6 +162,7 @@ src/wa.js       conexión de WhatsApp (Baileys), mensajes y reconexión
 src/webhook.js  entrega de mensajes entrantes: firma, cola y reintentos
 src/store.js    historial de mensajes en /data/messages.json
 src/config.js   variables de entorno
+scripts/setup.js  asistente de instalación (`npm run setup`)
 public/         panel web
 Dockerfile      imagen que usa Railway
 ```
